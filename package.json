@@ -1,0 +1,29 @@
+{
+  "name": "thesis",
+  "version": "1.0.0",
+  "description": "Secure e-voting dapp",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "solc": "^0.4.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamalakhaligova/Thesis.git"
+  },
+  "author": "Jamala Khaligova",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jamalakhaligova/Thesis/issues"
+  },
+  "homepage": "https://github.com/jamalakhaligova/Thesis#readme",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
