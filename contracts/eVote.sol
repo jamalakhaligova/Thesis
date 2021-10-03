@@ -13,6 +13,7 @@ contract eVote {
 		string email;
 		string pass;
 		string age;
+		address addr;
 		bool isRegistered;
 		bool isLoggedIn;
 		bool allowedToVote;
@@ -29,6 +30,7 @@ contract eVote {
     
     mapping(address => Voter) public voters;
 	mapping(address => VoterDetails) voterdetails;
+	mapping(uint => address) voterList;
 	
     mapping(uint => Candidate) public candidates;
     
@@ -71,9 +73,11 @@ contract eVote {
         }
     }
 	
-	function registerVoter(string memory _email,string memory _password,string memory _age) public returns (bool) {
+	function registerVoter(string memory _email,string memory _password,string memory _age, address _addr) public returns (bool) {
 		require(!voterdetails[msg.sender].isRegistered);
-		voterdetails[msg.sender] = VoterDetails(_email,_password,_age,true,false, false);
+		voterList[totalVoters] = msg.sender;
+		voterdetails[msg.sender] = VoterDetails(_email,_password,_age, _addr, true, false, false);
+		totalVoters+= 1;
         return true;
     }
 	
