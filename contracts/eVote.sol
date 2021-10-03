@@ -4,12 +4,21 @@
 pragma solidity ^0.5.16;
 
 contract eVote {
-
     struct Voter {
-        bytes32 name;
         bool hasVoted;
-        uint vote; 
+        uint vote;
     }
+	
+	struct VoterDetails{
+		string email;
+		string pass;
+		string age;
+		bool isRegistered;
+		bool isLoggedIn;
+		bool allowedToVote;
+	
+	}
+	
     struct Candidate {
         uint id;
         bytes32 name;
@@ -19,6 +28,8 @@ contract eVote {
     address payable public chairman;
     
     mapping(address => Voter) public voters;
+	mapping(address => VoterDetails) voterdetails;
+	
     mapping(uint => Candidate) public candidates;
     
     uint public totalVoters = 0;
@@ -31,25 +42,67 @@ contract eVote {
         addCandidate("Third Candidate");
     }
 	
+	/*function voterAuth(address _voter) public {
+        require(msg.sender == chairman);
+        for(uint i=0;i<totalVoters;i++) {
+			if(voters[voterList[i]].user_adrs == _voter){
+				voters[voterList[i]].allowedToVote = true;
+			}
+			
+		}
+    }*/
+	
+	
+	function loginVoter(string memory _email, string memory _password) public returns (bool)
+    {
+		require(voterdetails[msg.sender].isRegistered);
+		//require(!voterdetails[msg.sender].isLoggedIn);
+        if (
+			keccak256(abi.encodePacked(voterdetails[msg.sender].email)) ==
+            keccak256(abi.encodePacked(_email))  &&
+            keccak256(abi.encodePacked(voterdetails[msg.sender].pass)) ==
+            keccak256(abi.encodePacked(_password))
+			
+        ) {
+            voterdetails[msg.sender].isLoggedIn = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+	
+	function registerVoter(string memory _email,string memory _password,string memory _age) public returns (bool) {
+		require(!voterdetails[msg.sender].isRegistered);
+		voterdetails[msg.sender] = VoterDetails(_email,_password,_age,true,false, false);
+        return true;
+    }
+	
+	/*function checkIsUserLogged(address _address) public view returns (bool) {
+        return (voterdetails[_address].isLoggedIn);
+    }
+	
+	function logout() public {
+        voterdetails[msg.sender].isLoggedIn = false;
+    }*/
+	
 	event votedEvent (
         uint indexed _voteIndex
     );
-	
     
     function addCandidate(bytes32 _name) private {
         require(msg.sender == chairman);
         totalCandidates+= 1;
         candidates[totalCandidates] = Candidate(totalCandidates,_name, 0);
     }
+	
+	
 
     function vote(uint _voteIndex) public {
-        require(!voters[msg.sender].hasVoted);
 		require(_voteIndex > 0 && _voteIndex <= totalCandidates);       
         voters[msg.sender].vote = _voteIndex;
         voters[msg.sender].hasVoted = true;
         
         candidates[_voteIndex].totalVotes += 1;
-        totalVoters += 1;
 		
 		emit votedEvent(_voteIndex);
     }

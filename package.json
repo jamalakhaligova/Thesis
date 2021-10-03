@@ -11,7 +11,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "solc": "^0.4.22"
+    "@truffle/contract": "^4.3.36",
+    "solc": "^0.8.9",
+    "web3": "^1.5.3"
   },
   "repository": {
     "type": "git",
