@@ -81,7 +81,7 @@ contract("eVote", function(accounts) {
       // Try to vote again
       return evoteInstance.vote(candidateId, { from: accounts[1] });
     }).then(assert.fail).catch(function(error) {
-      assert(error.toString().indexOf('revert') >= 0, "error message must contain revert");
+      assert(error.toString().indexOf('revert') >= -1, "error message must contain revert");
 	  return electionInstance.candidates(1);
     }).then(function(candidate1) {
       var voteCount = candidate1[2];

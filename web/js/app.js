@@ -14,6 +14,22 @@ function addAccount(email, pass){
 	//console.log(accounts_list);
 };
 
+function adminLogin(email,pass) {
+	var $address = $(email);
+	var emailaddress = $address.val();
+	var $passw = $(pass);
+	var pass_val = $passw.val();
+	console.log(emailaddress);
+	console.log(pass_val);
+	
+	if(emailaddress == "admin@admin.com" && pass_val=="admin"){
+		window.location.replace("http://localhost:3000/admin.html");
+	}else{
+		console.log("Wrong Credentials!");
+	}
+	
+};
+
 function setId(id) {
 	candidateId = id;
 }
@@ -47,6 +63,10 @@ App =  {
 	  App.setNames();
 	  if(window.location.href == "http://localhost:3000/votingpoll.html" || window.location.href == "http://localhost:3000/results.html"){
 		  return App.render();
+	  }
+	  
+	  if(window.location.href == "http://localhost:3000/authentication.html"){
+		  return App.listVoters();
 	  }
     });
   },
@@ -90,14 +110,34 @@ App =  {
     });  
   },
   
+    checkLogin: function() {
+	  $('#voterout').hide();
+	  web3.eth.getCoinbase(function(err, account) {
+      if (err === null) {
+        App.account = account;
+        $("#accountAddress").html("Your Account: " + account);
+      }
+    });
+	  
+	  App.contracts.eVote.deployed().then(function(instance) {
+      evoteInstance = instance;
+	  return evoteInstance.voters(App.account);
+    }).then(function(voter) {
+		var isLoggedIn = voter[3];
+		if(isLoggedIn){
+			$('#voterout').show();
+		}else{
+			$('#voterin').show();
+		}	
+    });  
+  },
+  
   authenticate : function(address) { 
 	var $addrs = $(address);
-	var address = $addrs.val();
-	
-	console.log(address);
-	
+	var address_val = $addrs.val();
+	console.log(address_val);
 	App.contracts.eVote.deployed().then(function(instance) {
-      return instance.voterAuth(address, { from: App.account }	);
+      return instance.voterAuth(address_val, { from: App.account }	);
     }).then(function(result) {
 		console.log("Authenticated. This user can vote now.");
     });
@@ -114,6 +154,8 @@ App =  {
     });
 
 	$('#warning').hide();
+	$('#unlogged').hide();
+	$('#authfail').hide();
 	
     App.contracts.eVote.deployed().then(function(instance) {
       evoteInstance = instance;
@@ -134,17 +176,61 @@ App =  {
       }
       return evoteInstance.voters(App.account);
     }).then(function(voter){
-		return voter[0];
-	}).then(function(hasVoted) {
-      if(hasVoted) {
-        $('#votepoll').hide();
-		$('#warning').show();
-		console.log("You already voted");
-      }
-
-    }).catch(function(error) {
+		var hasVoted = voter[0];
+		var isLoggedIn = voter[3];
+		var isAllowed = voter[4];
+		if(hasVoted) {
+			$('#votepoll').hide();
+			$('#warning').show();
+			console.log("You already voted");
+		}
+		else if(!isLoggedIn){
+			$('#votepoll').hide();
+			$('#unlogged').show();
+			console.log("Login first to vote");  
+		}
+		else if(!isAllowed){
+			$('#votepoll').hide();
+			$('#authfail').show();
+			console.log("Admin didn't authorazed yet"); 
+		}
+	}).catch(function(error) {
 		console.warn(error);
     });
+  },
+  
+  listVoters: function() {
+    var evoteInstance;
+	
+    App.contracts.eVote.deployed().then(function(instance) {
+      evoteInstance = instance;
+      return evoteInstance.totalVoters();
+    }).then(function(totalVoters) {
+		voterAddresses = $("#voterAddresses");
+		voterAddresses.text('')
+		for (var i = 1; i <= totalVoters; i++) {
+			evoteInstance.voterList(i).then(function(voteraddr) {
+          voterTemplate = "<tr><th>" + voteraddr + "</th><td></td></tr>"
+		  voterAddresses.append(voterTemplate);
+        });
+      }
+    })
+  },
+  
+  isAuth: function(address) {  
+	var evoteInstance;
+    App.contracts.eVote.deployed().then(function(instance) {
+      evoteInstance = instance;
+	  return evoteInstance.voters(address)
+	}).then(function(voter) {
+		var auth = voter[4];
+		if(auth){
+			return "Yes";
+		}
+		else {
+			return "No";
+		}
+	});  
   },
   
   loginUser : function(address,pass){
@@ -159,16 +245,20 @@ App =  {
 	App.contracts.eVote.deployed().then(function(instance) {
 		//loginVoter(address _address, string memory _password)
 		return instance.loginVoter(emailaddress,pass_val, {from: App.account}).on('receipt', function(){
-			console.log("logged in");
-			window.location.replace("http://localhost:3000/votingpoll.html");
-		}).catch(function(error){
-			console.log("You aren't registered? Go and register now");
+			console.log("login function");
+		}).then(function(successfulLogin){
+			console.log(successfulLogin);
+			if(!successfulLogin){
+				console.log("Login credentials are incorrect");
+			}else{
+				window.location.replace("http://localhost:3000/votingpoll.html");
+			}
 		})
 	})
 	
   },
 	
-  register : function(email,age,pass, conpass, addr){
+  register : function(email,age,pass, conpass){
 	var $email = $(email);
 	var emailaddress = $email.val();
 	var $id_ = $(age);
@@ -179,9 +269,6 @@ App =  {
 	var $cpassw = $(conpass);
 	var confirmpass_val = $cpassw.val();
 	
-	var $addr = $(addr);
-	var addr_val = $addr.val();
-	
 	console.log(jQuery.type(emailaddress));
 	console.log(jQuery.type(pass_val));
 	
@@ -190,7 +277,7 @@ App =  {
 		console.log(App.contracts.eVote);
 		App.contracts.eVote.deployed().then(function(instance) {
 			//string memory _email,string memory _password,string memory _age
-			return instance.registerVoter(emailaddress,pass_val,ageval,addr_val, {from: App.account}).on('receipt', function(){
+			return instance.registerVoter(emailaddress,pass_val,ageval, {from: App.account}).on('receipt', function(){
 			console.log("registered");
 			window.location.replace("http://localhost:3000/voter_login.html");
 		}).catch(function(error){
@@ -201,11 +288,6 @@ App =  {
 	else{
 		console.log("Passwords dont match");
 	}
-  },
-  
-  getResults : function(){
-	  
-	  
   },
   
   castVote: function() {

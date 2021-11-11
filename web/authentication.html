@@ -17,7 +17,7 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">Admin Webpage</div>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="authentication.html">User Authentication</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">User Authentication</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Monitor results</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Add Candidate</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Change Phase</a>
@@ -49,18 +49,26 @@
                 </nav>
                 <!-- Page content-->
                 <div class="container-fluid">
-                    <h1 class="mt-4">Welcome to the Admin Webpage!</h1>
+                    <h1 class="mt-4">Authenticate voter</h1>
 					<br/>
+						<h5> Registered voters: </h5>
+						<br>
+						<table class="center">
+						<tbody id="voterAddresses" >
+							  </tbody>
+						</table>
+					<input type="text" id="address" name="voteraddress"><br><br>
+					 <button class="btn btn-primary" onclick="App.authenticate(address)" id="authentication"> Authenticate </button>
 					<!--button class="btn btn-primary" id="startvote">Start</button>
 					<button class="btn btn-primary" id="stopvote">Stop</button-->
-                    <p>Admin can add candidate, verify voters, start voting, and release results.</p>
-                    <p>
+                    <p>Type the address of voter, you want to authenticate.</p>
+                    <!--p>
                         Make sure to keep all page content within the
                         <code>#page-content-wrapper</code>
                         . The top navbar is optional, and just for demonstration. Just create an element with the
                         <code>#sidebarToggle</code>
                         ID which will toggle the menu when clicked.
-                    </p>
+                    </p-->
                 </div>
             </div>
         </div>

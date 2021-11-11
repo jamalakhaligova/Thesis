@@ -1,4 +1,3 @@
-
 // File: contracts/eVote.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
@@ -7,19 +6,16 @@ contract eVote {
     struct Voter {
         bool hasVoted;
         uint vote;
+		bool isRegistered;
+		bool isLoggedIn;
+		bool allowedToVote;
     }
-	
 	struct VoterDetails{
 		string email;
 		string pass;
 		string age;
-		address addr;
-		bool isRegistered;
-		bool isLoggedIn;
-		bool allowedToVote;
 	
 	}
-	
     struct Candidate {
         uint id;
         bytes32 name;
@@ -27,11 +23,10 @@ contract eVote {
     }
     
     address payable public chairman;
-    
+	
     mapping(address => Voter) public voters;
 	mapping(address => VoterDetails) voterdetails;
-	mapping(uint => address) voterList;
-	
+	mapping(uint => address) public voterList;
     mapping(uint => Candidate) public candidates;
     
     uint public totalVoters = 0;
@@ -44,50 +39,74 @@ contract eVote {
         addCandidate("Third Candidate");
     }
 	
-	/*function voterAuth(address _voter) public {
-        require(msg.sender == chairman);
-        for(uint i=0;i<totalVoters;i++) {
-			if(voters[voterList[i]].user_adrs == _voter){
-				voters[voterList[i]].allowedToVote = true;
-			}
-			
+	function voterAuth(string memory _voter) public returns (bool) {
+		address _voter_addr = parseAddr(_voter);
+		if(voters[_voter_addr].isRegistered){
+			voters[_voter_addr].allowedToVote = true;
 		}
-    }*/
+		return voters[_voter_addr].allowedToVote;
+    }
+
+	function parseAddr(string memory _a) internal pure returns (address _parsedAddress) {
+		bytes memory tmp = bytes(_a);
+		uint160 iaddr = 0;
+		uint160 b1;
+		uint160 b2;
+		for (uint i = 2; i < 2 + 2 * 20; i += 2) {
+			iaddr *= 256;
+			b1 = uint160(uint8(tmp[i]));
+			b2 = uint160(uint8(tmp[i + 1]));
+			if ((b1 >= 97) && (b1 <= 102)) {
+				b1 -= 87;
+			} else if ((b1 >= 65) && (b1 <= 70)) {
+				b1 -= 55;
+			} else if ((b1 >= 48) && (b1 <= 57)) {
+				b1 -= 48;
+			}
+			if ((b2 >= 97) && (b2 <= 102)) {
+				b2 -= 87;
+			} else if ((b2 >= 65) && (b2 <= 70)) {
+				b2 -= 55;
+			} else if ((b2 >= 48) && (b2 <= 57)) {
+				b2 -= 48;
+			}
+			iaddr += (b1 * 16 + b2);
+		}
+		return address(iaddr);
+	}
 	
 	
 	function loginVoter(string memory _email, string memory _password) public returns (bool)
     {
-		require(voterdetails[msg.sender].isRegistered);
-		//require(!voterdetails[msg.sender].isLoggedIn);
-        if (
+		require(voters[msg.sender].isRegistered);
+		//require(!voters[msg.sender].isLoggedIn);
+        require (
 			keccak256(abi.encodePacked(voterdetails[msg.sender].email)) ==
             keccak256(abi.encodePacked(_email))  &&
             keccak256(abi.encodePacked(voterdetails[msg.sender].pass)) ==
             keccak256(abi.encodePacked(_password))
 			
-        ) {
-            voterdetails[msg.sender].isLoggedIn = true;
-            return true;
-        } else {
-            return false;
-        }
+        );
+		
+        voters[msg.sender].isLoggedIn = true;
     }
 	
-	function registerVoter(string memory _email,string memory _password,string memory _age, address _addr) public returns (bool) {
-		require(!voterdetails[msg.sender].isRegistered);
-		voterList[totalVoters] = msg.sender;
-		voterdetails[msg.sender] = VoterDetails(_email,_password,_age, _addr, true, false, false);
+	function registerVoter(string memory _email,string memory _password,string memory _age) public returns (bool) {
+		require(!voters[msg.sender].isRegistered);
 		totalVoters+= 1;
+		voterList[totalVoters] = msg.sender;
+		voters[msg.sender].isRegistered = true;
+		voterdetails[msg.sender] = VoterDetails(_email,_password,_age);
         return true;
     }
 	
-	/*function checkIsUserLogged(address _address) public view returns (bool) {
-        return (voterdetails[_address].isLoggedIn);
+	function checkIsUserLogged() public view returns (bool) {
+        return (voters[msg.sender].isLoggedIn);
     }
 	
 	function logout() public {
-        voterdetails[msg.sender].isLoggedIn = false;
-    }*/
+        voters[msg.sender].isLoggedIn = false;
+    }
 	
 	event votedEvent (
         uint indexed _voteIndex
@@ -98,16 +117,15 @@ contract eVote {
         totalCandidates+= 1;
         candidates[totalCandidates] = Candidate(totalCandidates,_name, 0);
     }
-	
-	
 
     function vote(uint _voteIndex) public {
+		require(voters[msg.sender].isRegistered);
+		require(voters[msg.sender].allowedToVote);
 		require(_voteIndex > 0 && _voteIndex <= totalCandidates);       
         voters[msg.sender].vote = _voteIndex;
         voters[msg.sender].hasVoted = true;
         
         candidates[_voteIndex].totalVotes += 1;
-		
 		emit votedEvent(_voteIndex);
     }
 
