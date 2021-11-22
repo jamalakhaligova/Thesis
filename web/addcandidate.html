@@ -19,8 +19,8 @@
                 <div class="list-group list-group-flush">
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="authentication.html">User Authentication</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Monitor results</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="addcandidate.html">Add Candidate</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="managevoting.html">Administrate voting</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Add Candidate</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Change Phase</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Profile</a>
                 </div>
             </div>
@@ -49,18 +49,19 @@
                 </nav>
                 <!-- Page content-->
                 <div class="container-fluid">
-                    <h1 class="mt-4">Welcome to the Admin Webpage!</h1>
+                    <h1 class="mt-4">Add candidate</h1>
 					<br/>
-					<!--button class="btn btn-primary" id="startvote">Start</button>
-					<button class="btn btn-primary" id="stopvote">Stop</button-->
-                    <p>Admin can add candidate, verify voters, start voting, and release results.</p>
-                    <p>
+					<p>Please type the name of candidate.</p>
+					<input type="text" id="candname" name="candname"><br><br>
+					 <button class="btn btn-primary" onclick=" App.addNewCandidate(candname)" id="addcandidate"> Add </button>
+
+                    <!--p>
                         Make sure to keep all page content within the
                         <code>#page-content-wrapper</code>
                         . The top navbar is optional, and just for demonstration. Just create an element with the
                         <code>#sidebarToggle</code>
                         ID which will toggle the menu when clicked.
-                    </p>
+                    </p-->
                 </div>
             </div>
         </div>

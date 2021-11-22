@@ -31,12 +31,12 @@ contract eVote {
     
     uint public totalVoters = 0;
     uint public totalCandidates = 0;
+	
+	bool public startVote = false;
+	bool public stopVote = true;
     
     constructor () public {
         chairman = (msg.sender);
-        addCandidate("First Candidate");
-        addCandidate("Second Candidate");
-        addCandidate("Third Candidate");
     }
 	
 	function voterAuth(string memory _voter) public returns (bool) {
@@ -108,12 +108,21 @@ contract eVote {
         voters[msg.sender].isLoggedIn = false;
     }
 	
+	function startVoting() public {
+		startVote = true;
+		stopVote = false;
+	}
+	
+	function stopVoting() public {
+		stopVote = true;
+		startVote = false;
+	}
+	
 	event votedEvent (
         uint indexed _voteIndex
     );
     
-    function addCandidate(bytes32 _name) private {
-        require(msg.sender == chairman);
+    function addCandidate(bytes32 _name) public {
         totalCandidates+= 1;
         candidates[totalCandidates] = Candidate(totalCandidates,_name, 0);
     }

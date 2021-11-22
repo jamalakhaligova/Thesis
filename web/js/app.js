@@ -1,17 +1,13 @@
 var candidateId;
-var accounts_list;
 var candidatesResults;
-var new_json;
+var allCandidates;
 
 function addAccount(email, pass){
 	var $address = $(email);
 	var emailaddress = $address.val();
 	var $passw = $(pass);
 	var pass_val = $passw.val();
-	console.log(emailaddress);
-	console.log(pass_val);
-	//new_json = JSON.stringify(accounts_list.push({emailaddress: pass_val}));
-	//console.log(accounts_list);
+
 };
 
 function adminLogin(email,pass) {
@@ -30,9 +26,11 @@ function adminLogin(email,pass) {
 	
 };
 
+
 function setId(id) {
 	candidateId = id;
 }
+
 App =  {
   web3Provider: null,
   contracts: {},
@@ -61,6 +59,7 @@ App =  {
       App.contracts.eVote.setProvider(App.web3Provider);	
       App.listenForEvents();
 	  App.setNames();
+	  App.checkLogin();
 	  if(window.location.href == "http://localhost:3000/votingpoll.html" || window.location.href == "http://localhost:3000/results.html"){
 		  return App.render();
 	  }
@@ -68,7 +67,37 @@ App =  {
 	  if(window.location.href == "http://localhost:3000/authentication.html"){
 		  return App.listVoters();
 	  }
+	  
+	  if(window.location.href == "http://localhost:3000/managevoting.html") {
+		  return App.manageVoting();
+	  }
+	  
     });
+  },
+  
+  checkLogin: function() {
+    var evoteInstance;
+    App.contracts.eVote.deployed().then(function(instance) {
+      evoteInstance = instance;
+      return evoteInstance.voters(App.account);
+    }).then(function(voter) {
+		var isLoggedIn = voter[3];
+		if(!isLoggedIn){
+			$('#voterin').show();
+			$('#adminlogin').show();
+			$('#voterreg').show();
+			$('#voterout').hide();
+			$('#results').hide();
+		} else{
+			$('#voterout').show();
+			$('#results').show();
+			$('#voterin').hide();
+			$('#voterreg').hide();
+			$('#adminlogin').hide();
+			
+		}
+    })
+	
   },
 
   listenForEvents: function() {
@@ -85,8 +114,6 @@ App =  {
   },
   
     setNames: function() {
-	  var index = 1;
-	  
 	  web3.eth.getCoinbase(function(err, account) {
       if (err === null) {
         App.account = account;
@@ -95,42 +122,23 @@ App =  {
     });
 	  
 	  App.contracts.eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-      return evoteInstance.totalCandidates();
-    }).then(function(totalCandidates) {
+		evoteInstance = instance;
+		return evoteInstance.totalCandidates();
+	  }).then(function(totalCandidates) {
 		for (var i = 1; i <= totalCandidates; i++) {
-        evoteInstance.candidates(i).then(function(candidate) {
-          var id = candidate[0];
-          var name = candidate[1];
-          var voteCount = candidate[2];
-		  $("#candidate" + index.toString()).html(web3.utils.toAscii(name));
-		  index++;
+			evoteInstance.candidates(i).then(function(candidate) {
+			var id = candidate[0];
+			var name = candidate[1];
+			var voteCount = candidate[2];
+			//$( ".row text-center" ).append( "<div class='col-md-4'><span class='fa-stack fa-4x'><i class='fas fa-circle fa-stack-2x text-primary'></i><i class='fas fa-user-circle fa-stack-1x fa-inverse'></i></span><h4 class='my-3' id='candidate" + index.toString() + "'>Candidate 1</h4><button class='btn btn-success' id = " + index.toString() + " onclick='setId(this.id) & App.castVote(id)'>Vote</button></div>" );
+			$( "#candidates" ).append( "<div class='col-md-4'><span class='fa-stack fa-4x'><i class='fas fa-circle fa-stack-2x text-primary'></i><i class='fas fa-user-circle fa-stack-1x fa-inverse'></i></span><h4 class='my-3' id='candidate"+ i.toString() +"'>"+ web3.utils.toAscii(name) +"</h4><button class='btn btn-success' id="+i.toString()+" onclick='setId(this.id) & App.castVote(id)'>Vote</button></div>" );
+			//$("#candidate" + i.toString()).html(web3.utils.toAscii(name));
         });
       }
     });  
+
   },
   
-    checkLogin: function() {
-	  $('#voterout').hide();
-	  web3.eth.getCoinbase(function(err, account) {
-      if (err === null) {
-        App.account = account;
-        $("#accountAddress").html("Your Account: " + account);
-      }
-    });
-	  
-	  App.contracts.eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-	  return evoteInstance.voters(App.account);
-    }).then(function(voter) {
-		var isLoggedIn = voter[3];
-		if(isLoggedIn){
-			$('#voterout').show();
-		}else{
-			$('#voterin').show();
-		}	
-    });  
-  },
   
   authenticate : function(address) { 
 	var $addrs = $(address);
@@ -141,6 +149,48 @@ App =  {
     }).then(function(result) {
 		console.log("Authenticated. This user can vote now.");
     });
+	  
+  },
+  
+  manageVoting : function(){
+	  $('#completedelection').hide();
+	App.contracts.eVote.deployed().then(function(instance) {
+      return instance.stopVote();
+	}).then(function(stopVote){
+		$('#stopvote').hide();  
+		$('#stopvotebutton').hide();  
+    });  
+	
+	App.contracts.eVote.deployed().then(function(instance) {
+      return instance.startVote();
+	}).then(function(startVote){
+		$('#startVote').hide();  
+		$('#startVotebutton').hide(); 
+    });    
+	  
+  },
+  
+  startVoting : function(){
+	App.contracts.eVote.deployed().then(function(instance) {
+      return instance.startVote({ from: App.account });
+	}).then(function(startVote){
+		$('#startvote').hide() 
+		$('#startvotebutton').hide() 
+		$('#stopvote').show();
+		$('#stopvotebutton').show();  		
+    });    
+	  
+  },
+  
+  stopVoting : function(){
+	App.contracts.eVote.deployed().then(function(instance) {
+      return instance.stopVote({ from: App.account })
+	}).then(function(stopVote){
+		$('#stopvote').hide(); 
+		$('#stopvotebutton').hide() 
+		$('#completedelection').show();
+				
+    });	
 	  
   },
 
@@ -156,6 +206,8 @@ App =  {
 	$('#warning').hide();
 	$('#unlogged').hide();
 	$('#authfail').hide();
+	$('#closedvoting').hide();
+	
 	
     App.contracts.eVote.deployed().then(function(instance) {
       evoteInstance = instance;
@@ -197,6 +249,9 @@ App =  {
 	}).catch(function(error) {
 		console.warn(error);
     });
+	
+	
+
   },
   
   listVoters: function() {
@@ -215,32 +270,36 @@ App =  {
         });
       }
     })
+	
   },
   
-  isAuth: function(address) {  
-	var evoteInstance;
-    App.contracts.eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-	  return evoteInstance.voters(address)
-	}).then(function(voter) {
-		var auth = voter[4];
-		if(auth){
-			return "Yes";
-		}
-		else {
-			return "No";
-		}
-	});  
+  addNewCandidate : function(name){
+	var $name = $(name);
+	var nameval = $name.val();
+	console.log(nameval);
+	name_ascii = web3.utils.fromAscii(nameval);
+	console.log(name_ascii);
+
+	
+	App.contracts.eVote.deployed().then(function(instance) {
+		return instance.addCandidate(name_ascii, {from: App.account}).on('receipt', function(){
+		}).then(function(candidateAdded){
+			console.log(candidateAdded);
+			if(!candidateAdded){
+				console.log("Error");
+			} //else added successfully write
+		})
+	})
+	
+
   },
+
   
   loginUser : function(address,pass){
 	var $address = $(address);
 	var emailaddress = $address.val();
 	var $passw = $(pass);
 	var pass_val = $passw.val();
-	
-
-
 	
 	App.contracts.eVote.deployed().then(function(instance) {
 		//loginVoter(address _address, string memory _password)
@@ -250,6 +309,7 @@ App =  {
 			console.log(successfulLogin);
 			if(!successfulLogin){
 				console.log("Login credentials are incorrect");
+				alert("Login credentials are incorrect");
 			}else{
 				window.location.replace("http://localhost:3000/votingpoll.html");
 			}
@@ -257,6 +317,19 @@ App =  {
 	})
 	
   },
+	
+  logoutUser : function(){
+	App.contracts.eVote.deployed().then(function(instance) {
+		return instance.logout( {from: App.account}).on('receipt', function(){
+		}).then(function(successfulLogout){
+			console.log(successfulLogout);
+			if(successfulLogout){
+				window.location.replace("http://localhost:3000/index.html");
+			}
+		})
+	})
+  },	
+	
 	
   register : function(email,age,pass, conpass){
 	var $email = $(email);
@@ -269,19 +342,15 @@ App =  {
 	var $cpassw = $(conpass);
 	var confirmpass_val = $cpassw.val();
 	
-	console.log(jQuery.type(emailaddress));
-	console.log(jQuery.type(pass_val));
-	
-	
 	if(pass_val == confirmpass_val){
 		console.log(App.contracts.eVote);
 		App.contracts.eVote.deployed().then(function(instance) {
 			//string memory _email,string memory _password,string memory _age
 			return instance.registerVoter(emailaddress,pass_val,ageval, {from: App.account}).on('receipt', function(){
-			console.log("registered");
 			window.location.replace("http://localhost:3000/voter_login.html");
 		}).catch(function(error){
-			console.log("You already registered");
+			$("#regerror").html("You already registered");
+			alert("You already registered");
 		})
 		})
 	}
@@ -291,7 +360,6 @@ App =  {
   },
   
   castVote: function() {
-	  console.log("candidate id is " + candidateId);
 	  App.contracts.eVote.deployed().then(function(instance) {
       return instance.vote(candidateId, { from: App.account });
     }).then(function(result) {

@@ -42,38 +42,9 @@
                     <h2 class="section-heading text-uppercase">Candidates</h2>
                     <h3 class="section-subheading text-muted">Click on the vote button below your candidate.</h3>
                 </div>
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <span class="fa-stack fa-4x">
-                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                            <i class="fas fa-user-circle fa-stack-1x fa-inverse"></i>
-
-                        </span>
-                        <h4 class="my-3" id="candidate1">Candidate 1</h4>
-                        <!--p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p-->
-						<button class="btn btn-success" id = "1" onclick=" setId(this.id) & App.castVote(id)">Vote</button>
-					</div>
-                    <div class="col-md-4">
-                        <span class="fa-stack fa-4x">
-                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                            <i class="fas fa-user-circle fa-stack-1x fa-inverse"></i>
-                        </span>
-                        <h4 class="my-3" id="candidate2">Candidate 2</h4>
-                        <!--p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p-->
-						<button class="btn btn-success" id = "2" onclick=" setId(this.id); App.castVote(id)" >Vote</button>
-					</div>
-                    <div class="col-md-4">
-                        <span class="fa-stack fa-4x">
-                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                            <i class="fas fa-user-circle fa-stack-1x fa-inverse"></i>
-                        </span>
-                        <h4 class="my-3" id="candidate3">Candidate 3</h4>
-                        <button class="btn btn-success" id = "3" onclick=" setId(this.id); App.castVote(id)">Vote</button>
-						<!--p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p-->
-                    </div>
-						<!--p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p-->
-					</div>
-                </div>
+                <div class="row text-center" id="candidates">
+                    
+				</div>
             </div>	
         </section>
 		
@@ -85,7 +56,7 @@
 		
 		<section class="page-section" id="unlogged">
 			<div class="text-center">
-				<h3 class="my-3"> You should login to vote. You can register if you don't have an account yet. </h3>
+				<h3 class="my-3"> You have to login to vote. You can register if you don't have an account yet. </h3>
 				<form>
 					<button class="btn btn-success" formaction="voter_login.html">Login </button>
 				</form>
@@ -100,7 +71,15 @@
 		<br/>
 		<br/>
 			<div class="text-center">
-				<h3 class="my-3"> Admin authorization is pending. Please contact us, if problem persists. </h3>
+				<h3 class="my-3"> Admin authorization is pending. You'll be authorizated before voting starts. </h3>
+			</div>	
+		</section>
+		
+		<section class="page-section" id="closedvoting">
+		<br/>
+		<br/>
+			<div class="text-center">
+				<h3 class="my-3"> Voting hasn't started yet. </h3>
 			</div>	
 		</section>
 

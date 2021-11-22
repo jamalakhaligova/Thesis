@@ -27,10 +27,10 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+						<li class="nav-item"><a class="nav-link" href="index.html">Homepage</a></li>
 						<li class="nav-item"><a class="nav-link" href="votingpoll.html">Vote</a></li>
-						<li class="nav-item"><a class="nav-link" href="admin.html">Admin Login</a></li>
-						<li class="nav-item"><a class="nav-link" href="voter_registration.html">Register</a></li>
-						<li class="nav-item"><a class="nav-link" href="voter_login.html">Voter Login</a></li>    
+						<li class="nav-item"><a class="nav-link" href="adminlogin.html">Admin Login</a></li>
+						<li class="nav-item"><a class="nav-link" href="voter_registration.html">Register</a></li>   
                     </ul>
                 </div>
             </div>
@@ -48,6 +48,8 @@
 		<p>Email: </p><input type="email" id="address" name="voteraddress"><br><br>
 		<p>Password: </p><input type="password" id="password" name="voterpass"><br><br>
 		<button class="btn btn-primary" onclick="App.loginUser(address,password)" id="registration"> Login </button>
+		<br/>
+		<p id="loginerror" class="text-center"> </p>
 
 		
 		
