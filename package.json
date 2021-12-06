@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@truffle/contract": "^4.3.36",
+    "jqplot": "^1.0.9",
     "solc": "^0.8.9",
     "web3": "^1.5.3"
   },

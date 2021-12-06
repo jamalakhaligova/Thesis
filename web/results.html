@@ -37,23 +37,30 @@
         <!-- Masthead-->
 
 		
-		<section class="page-section" id="#results">
-		<h1 class="text-center"> Results: </h1>
+		<section class="page-section" id="electionresults">
 		<br>
 		<div class="container">
 		<table class="center">
 		<tbody id="candidatesResults" >
               </tbody>
 		</table>
-		</div>	  
+		</div>	
+		<br/>
+		<h2 id="winner"> </h2>
+		</section>
+		<section class="page-section" id="votingongoing">
+			<h2> Voting is still ongoing. You will see the results when it is completed. </h2>
+		</section>
+		<section class="page-section" id="votingnotstarted">
+			<h2> Voting hasn't started yet. You will see the results, after it is completed. </h2>
+		</section>
+		<section class="page-section" id="unlogged">
+			<div class="text-center">
+				<h3 class="my-3"> You need to login first. </h3>
+			</div>	
 		</section>
 		
 		<style>
-			body  {
-			
-			background-color: #cccccc;
-			}
-			
 			table {
 				width : 70%;
 				local: center;
@@ -67,6 +74,10 @@
 			.center {
 			  margin-left: auto;
 			  margin-right: auto;
+			}
+			
+			h2{
+				text-align: center;
 			}
 		
 		</style>

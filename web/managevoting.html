@@ -18,7 +18,7 @@
                 <div class="sidebar-heading border-bottom bg-light">Admin Webpage</div>
                 <div class="list-group list-group-flush">
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="authentication.html">User Authentication</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="results.html">Monitor results</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="statisticaloverview.html">Voters overview</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="addcandidate.html">Add Candidate</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="managevoting.html">Administrate voting</a>
                 </div>
@@ -31,34 +31,26 @@
                         
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-                                <li class="nav-item active"><a class="nav-link" href="admin.html">Home</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#!">Link</a></li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                        <a class="dropdown-item" href="#!">Action</a>
-                                        <a class="dropdown-item" href="#!">Another action</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#!">Something else here</a>
-                                    </div>
-                                </li>
+                                <li class="nav-item active"><a class="nav-link" href="admin.html">Home</a></li>  
                             </ul>
                         </div>
                     </div>
                 </nav>
                 <!-- Page content-->
-                <div class="container-fluid">
-                    <h1 class="mt-4" id="startvote">Start voting</h1>
-					<button class="btn btn-primary" id="startvotebutton" onclick="App.startVoting()">Start</button>
-					<h1 class="mt-4" id="stopvote">Stop voting</h1>
-					<br/>
-					<button class="btn btn-primary" id="stopvotebutton" onclick="App.stopVoting()">Stop</button>
-	
-					<!--button class="btn btn-primary" id="startvote">Start</button>
-					<button class="btn btn-primary" id="stopvote">Stop</button-->
-					<h2 class="mt-4" id="completedelection"> Election has completed successfully. Voters can see the results now. </h2>
 
-                </div>
+				<section id="regcands">
+                    <h2 class="mt-4" id="startvote">Current phase: Registering candidates</h2>
+					<button class="btn btn-primary" id="startvotebutton" onclick="App.authorizeUsers()">Change</button>
+				</section>
+                <section id="authusers">
+                    <h2 class="mt-4" id="startvote">Current phase: Authorizing users</h2>
+					<button class="btn btn-primary" id="startvotebutton" onclick="App.startVoting()">Change</button>
+				</section>
+				<section id="stop">
+					<h2 class="mt-4" id="stopvote">Current phase: Voting started</h2>
+					<button class="btn btn-primary" id="stopvotebutton" onclick="App.stopVoting()">Stop</button>
+                </section>
+				<h2 class="mt-4" id="completedelection"> Election has completed successfully. See the results <a href="results.html">here</a>. </h2>
             </div>
         </div>
         <!-- Bootstrap core JS-->

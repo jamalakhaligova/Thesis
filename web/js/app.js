@@ -72,6 +72,10 @@ App =  {
 		  return App.manageVoting();
 	  }
 	  
+	  if(window.location.href == "http://localhost:3000/statisticaloverview.html") {
+		  return App.showStatistics();
+	  }
+	  
     });
   },
   
@@ -131,8 +135,7 @@ App =  {
 			var name = candidate[1];
 			var voteCount = candidate[2];
 			//$( ".row text-center" ).append( "<div class='col-md-4'><span class='fa-stack fa-4x'><i class='fas fa-circle fa-stack-2x text-primary'></i><i class='fas fa-user-circle fa-stack-1x fa-inverse'></i></span><h4 class='my-3' id='candidate" + index.toString() + "'>Candidate 1</h4><button class='btn btn-success' id = " + index.toString() + " onclick='setId(this.id) & App.castVote(id)'>Vote</button></div>" );
-			$( "#candidates" ).append( "<div class='col-md-4'><span class='fa-stack fa-4x'><i class='fas fa-circle fa-stack-2x text-primary'></i><i class='fas fa-user-circle fa-stack-1x fa-inverse'></i></span><h4 class='my-3' id='candidate"+ i.toString() +"'>"+ web3.utils.toAscii(name) +"</h4><button class='btn btn-success' id="+i.toString()+" onclick='setId(this.id) & App.castVote(id)'>Vote</button></div>" );
-			//$("#candidate" + i.toString()).html(web3.utils.toAscii(name));
+			$( "#candidates" ).append( "<div class='col-md-4'><span class='fa-stack fa-4x'><i class='fas fa-circle fa-stack-2x text-primary'></i><i class='fas fa-user-circle fa-stack-1x fa-inverse'></i></span><h4 class='my-3' id='candidate"+ id +"'>"+ web3.utils.toAscii(name) +"</h4><button class='btn btn-success' id="+id+" onclick='setId(this.id); App.castVote(id)'>Vote</button></div>" );
         });
       }
     });  
@@ -153,41 +156,68 @@ App =  {
   },
   
   manageVoting : function(){
-	  $('#completedelection').hide();
+	$('#regcands').hide();
+	$('#authusers').hide();
+	$('#stop').hide();
+	$('#completedelection').hide();
+	var evoteInstance;
+	var completed;
+	  App.contracts.eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+		return evoteInstance.registerCands();
+	  }).then(function(regcands){
+		  if(regcands){
+			$('#regcands').show();
+		  }
+		return evoteInstance.authorizeUsers();
+	}).then(function(authusers){
+		if(authusers){
+			$('#regcands').hide();
+			$('#authusers').show();
+		}
+		return evoteInstance.startVote();
+    }).then(function(start){
+		if(start){
+			$('#authusers').hide();
+			$('#stop').show();
+		}
+		return evoteInstance.finishedVote();
+	}).then(function(done){
+		if(done){
+		   $('#stop').hide();
+		   $('#completedelection').show();
+		}
+	});
+  
+ 
+  
+  },
+  
+  authorizeUsers : function() {
 	App.contracts.eVote.deployed().then(function(instance) {
-      return instance.stopVote();
-	}).then(function(stopVote){
-		$('#stopvote').hide();  
-		$('#stopvotebutton').hide();  
-    });  
-	
-	App.contracts.eVote.deployed().then(function(instance) {
-      return instance.startVote();
-	}).then(function(startVote){
-		$('#startVote').hide();  
-		$('#startVotebutton').hide(); 
+      return instance.authorizingUsers({ from: App.account });
+	}).then(function(validationStarted){
+		$('#regcands').hide()  
+		$('#authusers').show();  		
     });    
 	  
   },
   
-  startVoting : function(){
+  startVoting : function() {
 	App.contracts.eVote.deployed().then(function(instance) {
-      return instance.startVote({ from: App.account });
-	}).then(function(startVote){
-		$('#startvote').hide() 
-		$('#startvotebutton').hide() 
-		$('#stopvote').show();
-		$('#stopvotebutton').show();  		
+      return instance.startVoting({ from: App.account });
+	}).then(function(votingStarted){
+		$('#authusers').hide()  
+		$('#stop').show();  		
     });    
 	  
   },
   
   stopVoting : function(){
 	App.contracts.eVote.deployed().then(function(instance) {
-      return instance.stopVote({ from: App.account })
-	}).then(function(stopVote){
-		$('#stopvote').hide(); 
-		$('#stopvotebutton').hide() 
+      return instance.stopVoting({ from: App.account })
+	}).then(function(votingStopped){
+		$('#stop').hide(); 
 		$('#completedelection').show();
 				
     });	
@@ -202,11 +232,14 @@ App =  {
         $("#accountAddress").html("Your Account: " + account);
       }
     });
-
+	$('#votingongoing').hide();
+	$('#electionresults').hide();
+	$('#votingnotstarted').hide();
 	$('#warning').hide();
 	$('#unlogged').hide();
 	$('#authfail').hide();
 	$('#closedvoting').hide();
+	$('#finished').hide();
 	
 	
     App.contracts.eVote.deployed().then(function(instance) {
@@ -214,16 +247,25 @@ App =  {
       return evoteInstance.totalCandidates();
     }).then(function(totalCandidates) {
 		candidatesResults = $("#candidatesResults");
-		candidatesResults.text('')
+		candidatesResults.text('');
+		var winnerVoteCount = 0;
+		var winnerName;
 		for (var i = 1; i <= totalCandidates; i++) {
         evoteInstance.candidates(i).then(function(candidate) {
           var id = candidate[0];
           var name = candidate[1];
           var voteCount = candidate[2];
+		  if (voteCount.toNumber()>winnerVoteCount){  
+			winnerVoteCount = voteCount.toNumber();
+			winnerName = "Winner is " + web3.utils.toAscii(name);
+		  } else if(winnerVoteCount==voteCount.toNumber() && winnerName!= web3.utils.toAscii(name) ){
+				winnerName = " No winner. Votes were equal. New election will be organized, see you soon.";
+		  }
+
+		  $('#winner').html(winnerName);
 		  		
           candidateTemplate = "<tr><th>" + id + "</th><td>" + web3.utils.toAscii(name) + "</td><td>" + voteCount + "</td></tr>"
 		  candidatesResults.append(candidateTemplate);
-		  console.log(candidatesResults);
         });
       }
       return evoteInstance.voters(App.account);
@@ -234,24 +276,44 @@ App =  {
 		if(hasVoted) {
 			$('#votepoll').hide();
 			$('#warning').show();
+			$('#closedvoting').hide();
 			console.log("You already voted");
 		}
 		else if(!isLoggedIn){
 			$('#votepoll').hide();
+			$('#electionresults').hide();
 			$('#unlogged').show();
+			hasAccess = false;
 			console.log("Login first to vote");  
 		}
 		else if(!isAllowed){
 			$('#votepoll').hide();
 			$('#authfail').show();
-			console.log("Admin didn't authorazed yet"); 
+			$('#votingnotstarted').show();
+			hasAccess = false;
+			console.log("Admin didn't authorized yet"); 
+		}
+		return evoteInstance.startVote();
+	}).then(function(startedVoting){
+		if(!startedVoting){
+			$('#votepoll').hide();
+			$('#closedvoting').show();
 		}
 	}).catch(function(error) {
 		console.warn(error);
     });
 	
-	
 
+	App.contracts.eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+		return evoteInstance.finishedVote();
+	}).then(function(finishedVote){
+		if(finishedVote){
+			$('#votepoll').hide();
+			$('#electionresults').show();
+			$('#votingongoing').hide();
+		}
+	});
   },
   
   listVoters: function() {
@@ -265,12 +327,39 @@ App =  {
 		voterAddresses.text('')
 		for (var i = 1; i <= totalVoters; i++) {
 			evoteInstance.voterList(i).then(function(voteraddr) {
-          voterTemplate = "<tr><th>" + voteraddr + "</th><td></td></tr>"
-		  voterAddresses.append(voterTemplate);
+			voterTemplate = "<tr><th>" + voteraddr + "</th><td></td></tr>"
+			voterAddresses.append(voterTemplate);
         });
       }
     })
 	
+  },
+  
+  showStatistics: function(){
+	App.contracts.eVote.deployed().then(function(instance) {
+	 var evoteInstance;
+	  var allVoters;
+	  var votedTotal;
+	  var unvotedTotal;
+      evoteInstance = instance;
+      return evoteInstance.totalVoters();
+    }).then(function(totalVoters) {
+		allVoters = totalVoters.toNumber();
+		return evoteInstance.votedUsers();
+	}).then(function(votedUsers) {
+		votedTotal = votedUsers.toNumber();
+		console.log('voted total ' + votedTotal);
+		unvotedTotal = allVoters - votedTotal;
+		console.log('unvoted total ' + unvotedTotal);
+		$.jqplot('chartdiv', [[['voted',votedTotal],['unvoted',unvotedTotal]]], {
+        seriesDefaults:{ renderer:$.jqplot.PieRenderer, rendererOptions: {
+                showDataLabels: true
+            } },
+        legend:{ show: true }    
+		});
+	});
+
+
   },
   
   addNewCandidate : function(name){
@@ -287,11 +376,9 @@ App =  {
 			console.log(candidateAdded);
 			if(!candidateAdded){
 				console.log("Error");
-			} //else added successfully write
-		})
+			}
+			})
 	})
-	
-
   },
 
   
@@ -331,11 +418,11 @@ App =  {
   },	
 	
 	
-  register : function(email,age,pass, conpass){
+  register : function(email,idno,pass, conpass){
 	var $email = $(email);
 	var emailaddress = $email.val();
-	var $id_ = $(age);
-	var ageval = $id_.val();
+	var $idno = $(passid);
+	var idnoval = $idno.val();
 
 	var $passw = $(pass);
 	var pass_val = $passw.val();
@@ -343,10 +430,9 @@ App =  {
 	var confirmpass_val = $cpassw.val();
 	
 	if(pass_val == confirmpass_val){
-		console.log(App.contracts.eVote);
 		App.contracts.eVote.deployed().then(function(instance) {
 			//string memory _email,string memory _password,string memory _age
-			return instance.registerVoter(emailaddress,pass_val,ageval, {from: App.account}).on('receipt', function(){
+			return instance.registerVoter(emailaddress,pass_val,idnoval, {from: App.account}).on('receipt', function(){
 			window.location.replace("http://localhost:3000/voter_login.html");
 		}).catch(function(error){
 			$("#regerror").html("You already registered");
@@ -360,14 +446,13 @@ App =  {
   },
   
   castVote: function() {
+	  console.log(candidateId);
 	  App.contracts.eVote.deployed().then(function(instance) {
       return instance.vote(candidateId, { from: App.account });
     }).then(function(result) {
-      // Wait for votes to update
 	  $('#votepoll').hide();
 	  window.location.replace("http://localhost:3000/results.html");
 	  App.render();
-	  console.log(candidatesResults);
     }).catch(function(err) {
       console.warn(err);
     });

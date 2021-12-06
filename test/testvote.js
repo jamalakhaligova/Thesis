@@ -3,94 +3,120 @@ var eVote = artifacts.require("./eVote.sol");
 contract("eVote", function(accounts) {
   var evoteInstance;
   
-  it("starts with three candidates", function() {
+  it("starts with 0 candidates", function() {
     return eVote.deployed().then(function(instance) {
-      return instance.totalCandidates();
+		evoteInstance = instance;
+      return evoteInstance.totalCandidates();
     }).then(function(candidates) {
-      assert.equal(candidates, 3);
-    });
+		assert.equal(candidates, 0);
+	});
   });
   
-  it("initializes with correct ids", function() {
+  it("admin adds first candidate successfully", function() {
     return eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-      return evoteInstance.candidates(1);
-    }).then(function(candidate) {
-      assert.equal(candidate[0], 1, "contains the correct id");
-      return evoteInstance.candidates(2);
-    }).then(function(candidate) {
-      assert.equal(candidate[0], 2, "contains the correct id");
-	  return evoteInstance.candidates(3);
-    }).then(function(candidate) {
-      assert.equal(candidate[0], 3, "contains the correct id");
-    });
-  });
-  
-   it("allows to cast a vote", function() {
-    return eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-      candidateId = 1;
-      return evoteInstance.vote(candidateId, { from: accounts[0] });
+		evoteInstance = instance;
+      return evoteInstance.addCandidate(web3.utils.fromAscii("Angela"), { from: accounts[0] })
     }).then(function(receipt) {
-      assert.equal(receipt.logs.length, 1, "an event was triggered");
-      assert.equal(receipt.logs[0].event, "votedEvent", "the event type is correct");
-      assert.equal(receipt.logs[0].args._voteIndex.toNumber(), candidateId, "the candidate id is correct");
-      return evoteInstance.voters(accounts[0]);
-    }).then(function(voter){
-		var hasVoted = voter[1];
-		return hasVoted;
-	}).then(function(voted) {
-      assert(voted, "the voter was marked as voted");
-      return evoteInstance.candidates(candidateId);
-    }).then(function(candidate) {
-      var totalVotes = candidate[2];
-      assert.equal(totalVotes, 1, "increments the candidate's vote count");
-    })
+		return evoteInstance.totalCandidates();
+    }).then(function(candidates) {
+		assert.equal(candidates, 1);
+	});
   });
   
-	it("throws an exception for invalid candiates", function() {
+  it("successful registration for voter", function() {
     return eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-      return evoteInstance.vote(44, { from: accounts[1] })
+		evoteInstance = instance;
+      return evoteInstance.registerVoter("blabla@gmail.com","somepass","1232142", {from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.totalVoters();
+    }).then(function(voters) {
+		assert.equal(voters, 1);
+	});
+  });
+  
+  it("successful login for the registered voter", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.loginVoter("blabla@gmail.com","somepass", {from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.voters(accounts[0]);
+    }).then(function(voter) {
+		assert.equal(true, voter[3]);
+	});
+  });
+  
+  it("admin successfully changes phase to validate voters", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.authorizingUsers({from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.authorizeUsers();
+    }).then(function(isAuthPhase) {
+		assert.equal(true, isAuthPhase);
+	});
+  });
+  
+  it("admin successfully validated voter", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.voterAuth(accounts[0],{ from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.voters(accounts[0]);
+    }).then(function(voter) {
+		assert.equal(true, voter[4]);
+	});
+  });
+  
+  it("admin successfully changes phase to start voting", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.startVoting({from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.startVote();
+    }).then(function(started) {
+		assert.equal(true, started);
+	});
+  });
+  
+  it("validated voter casts vote ", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.vote(1,{from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.voters(accounts[0]);
+    }).then(function(voter) {
+		assert.equal(true, voter[0]);
+	});
+  });
+  
+  it("throws an exception for invalid candidates", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.vote(44,{from: accounts[0]})
     }).then(assert.fail).catch(function(error) {
-      assert(error.message.indexOf('revert') >= 0, "error message must contain revert");
-      return evoteInstance.candidates(1);
-    }).then(function(candidate1) {
-      var totalVotes = candidate1[2];
-      assert.equal(totalVotes, 1, "candidate 1 did not receive any votes");
-      return evoteInstance.candidates(2);
-    }).then(function(candidate2) {
-      var totalVotes = candidate2[2];
-      assert.equal(totalVotes, 0, "candidate 2 did not receive any votes");
-	  return evoteInstance.candidates(3);
-    }).then(function(candidate3) {
-      var totalVotes = candidate3[2];
-      assert.equal(totalVotes, 0, "candidate 3 did not receive any votes");
+      assert(error.toString().indexOf('revert') >= 0, "error message must contain revert");
     });
   });
   
-    it("throws an exception for double voting", function() {
+  it("throws an exception for double voting", function() {
     return eVote.deployed().then(function(instance) {
-      evoteInstance = instance;
-      candidateId = 1;
-      evoteInstance.vote(candidateId, { from: accounts[1] });
-      return evoteInstance.candidates(candidateId);
-    }).then(function(candidate) {
-      var totalVotes = candidate[2];
-      assert.equal(totalVotes, 1, "accepts first vote");
-      // Try to vote again
-      return evoteInstance.vote(candidateId, { from: accounts[1] });
+		evoteInstance = instance;
+      return evoteInstance.vote(1,{from: accounts[0]});
     }).then(assert.fail).catch(function(error) {
-      assert(error.toString().indexOf('revert') >= -1, "error message must contain revert");
-	  return electionInstance.candidates(1);
-    }).then(function(candidate1) {
-      var voteCount = candidate1[2];
-      assert.equal(voteCount, 1, "candidate 1 did not receive any votes");
-      return electionInstance.candidates(2);
-    }).then(function(candidate2) {
-      var voteCount = candidate2[2];
-      assert.equal(voteCount, 1, "candidate 2 did not receive any votes");
+      assert(error.toString().indexOf('revert') >= 0, "error message must contain revert");
     });
   });
+  
+  it("admin successfully tallies results", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.stopVoting({from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.finishedVote();
+    }).then(function(completed) {
+		assert.equal(true, completed);
+	});
+  });
+
 
 });

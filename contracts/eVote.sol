@@ -13,7 +13,7 @@ contract eVote {
 	struct VoterDetails{
 		string email;
 		string pass;
-		string age;
+		string identityno;
 	
 	}
     struct Candidate {
@@ -21,32 +21,43 @@ contract eVote {
         bytes32 name;
         uint totalVotes;
     }
-    
-    address payable public chairman;
 	
+	address chairman;
+	
+
     mapping(address => Voter) public voters;
-	mapping(address => VoterDetails) voterdetails;
-	mapping(uint => address) public voterList;
+	mapping(address => VoterDetails) voterdetails; 
+	mapping(uint => address) public voterList; //addresses of registered voters
     mapping(uint => Candidate) public candidates;
-    
+    bytes32 public winningCand;
+	
     uint public totalVoters = 0;
+	uint public authorizedVoters = 0;
+	uint public votedUsers = 0;
     uint public totalCandidates = 0;
 	
-	bool public startVote = false;
-	bool public stopVote = true;
-    
-    constructor () public {
-        chairman = (msg.sender);
+	bool public registerCands = true;
+	bool public authorizeUsers;
+	bool public startVote;
+	bool public finishedVote;
+	
+	constructor() public {
+        chairman = msg.sender;
     }
+
 	
 	function voterAuth(string memory _voter) public returns (bool) {
+		require(msg.sender == chairman);
+		require(authorizeUsers);
 		address _voter_addr = parseAddr(_voter);
 		if(voters[_voter_addr].isRegistered){
 			voters[_voter_addr].allowedToVote = true;
+			authorizedVoters += 1;
 		}
 		return voters[_voter_addr].allowedToVote;
     }
-
+	
+	//converts string memory address to solidity type address
 	function parseAddr(string memory _a) internal pure returns (address _parsedAddress) {
 		bytes memory tmp = bytes(_a);
 		uint160 iaddr = 0;
@@ -79,7 +90,6 @@ contract eVote {
 	function loginVoter(string memory _email, string memory _password) public returns (bool)
     {
 		require(voters[msg.sender].isRegistered);
-		//require(!voters[msg.sender].isLoggedIn);
         require (
 			keccak256(abi.encodePacked(voterdetails[msg.sender].email)) ==
             keccak256(abi.encodePacked(_email))  &&
@@ -91,12 +101,12 @@ contract eVote {
         voters[msg.sender].isLoggedIn = true;
     }
 	
-	function registerVoter(string memory _email,string memory _password,string memory _age) public returns (bool) {
+	function registerVoter(string memory _email,string memory _password,string memory _idno) public returns (bool) {
 		require(!voters[msg.sender].isRegistered);
 		totalVoters+= 1;
 		voterList[totalVoters] = msg.sender;
 		voters[msg.sender].isRegistered = true;
-		voterdetails[msg.sender] = VoterDetails(_email,_password,_age);
+		voterdetails[msg.sender] = VoterDetails(_email,_password,_idno);
         return true;
     }
 	
@@ -105,17 +115,25 @@ contract eVote {
     }
 	
 	function logout() public {
+		require(voters[msg.sender].isLoggedIn);
         voters[msg.sender].isLoggedIn = false;
     }
 	
+	function authorizingUsers() public {
+		require(msg.sender == chairman);
+		authorizeUsers = true;
+		registerCands = false;
+	}
+	
 	function startVoting() public {
+		require(msg.sender == chairman);
 		startVote = true;
-		stopVote = false;
+		authorizeUsers = false;
 	}
 	
 	function stopVoting() public {
-		stopVote = true;
-		startVote = false;
+		require(msg.sender == chairman);
+		finishedVote = true;
 	}
 	
 	event votedEvent (
@@ -123,18 +141,23 @@ contract eVote {
     );
     
     function addCandidate(bytes32 _name) public {
+		require(msg.sender == chairman);
+		require(registerCands);
         totalCandidates+= 1;
         candidates[totalCandidates] = Candidate(totalCandidates,_name, 0);
     }
+	
 
     function vote(uint _voteIndex) public {
-		require(voters[msg.sender].isRegistered);
+		require(startVote && !finishedVote);
+		require(!voters[msg.sender].hasVoted);
 		require(voters[msg.sender].allowedToVote);
-		require(_voteIndex > 0 && _voteIndex <= totalCandidates);       
+		require(_voteIndex > 0 && _voteIndex <= totalCandidates);
+
         voters[msg.sender].vote = _voteIndex;
         voters[msg.sender].hasVoted = true;
-        
         candidates[_voteIndex].totalVotes += 1;
+		votedUsers += 1;
 		emit votedEvent(_voteIndex);
     }
 
