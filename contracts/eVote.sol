@@ -29,10 +29,8 @@ contract eVote {
 	mapping(address => VoterDetails) voterdetails; 
 	mapping(uint => address) public voterList; //addresses of registered voters
     mapping(uint => Candidate) public candidates;
-    bytes32 public winningCand;
 	
     uint public totalVoters = 0;
-	uint public authorizedVoters = 0;
 	uint public votedUsers = 0;
     uint public totalCandidates = 0;
 	
@@ -40,6 +38,7 @@ contract eVote {
 	bool public authorizeUsers;
 	bool public startVote;
 	bool public finishedVote;
+	bool public voteOngoing;
 	
 	constructor() public {
         chairman = msg.sender;
@@ -52,7 +51,6 @@ contract eVote {
 		address _voter_addr = parseAddr(_voter);
 		if(voters[_voter_addr].isRegistered){
 			voters[_voter_addr].allowedToVote = true;
-			authorizedVoters += 1;
 		}
 		return voters[_voter_addr].allowedToVote;
     }
@@ -110,10 +108,6 @@ contract eVote {
         return true;
     }
 	
-	function checkIsUserLogged() public view returns (bool) {
-        return (voters[msg.sender].isLoggedIn);
-    }
-	
 	function logout() public {
 		require(voters[msg.sender].isLoggedIn);
         voters[msg.sender].isLoggedIn = false;
@@ -128,12 +122,14 @@ contract eVote {
 	function startVoting() public {
 		require(msg.sender == chairman);
 		startVote = true;
+		voteOngoing = true;
 		authorizeUsers = false;
 	}
 	
 	function stopVoting() public {
 		require(msg.sender == chairman);
 		finishedVote = true;
+		voteOngoing = false;
 	}
 	
 	event votedEvent (

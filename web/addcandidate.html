@@ -17,10 +17,10 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">Admin Webpage</div>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="authentication.html">User Authentication</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="statisticaloverview.html">Voters overview</a>
-					<a class="list-group-item list-group-item-action list-group-item-light p-3" href="addcandidate.html">Add Candidate</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="managevoting.html">Administrate voting</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="userauth" href="authentication.html">User Authentication</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="statistics" href="statisticaloverview.html">Voters overview</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="addcndid" href="addcandidate.html">Add Candidate</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="phasechange" href="managevoting.html">Administrate voting</a>
                 </div>
             </div>
             <!-- Page content wrapper-->
@@ -42,15 +42,7 @@
 					<br/>
 					<p>Please type the name of candidate.</p>
 					<input type="text" id="candname" name="candname"><br><br>
-					 <button class="btn btn-primary" onclick=" App.addNewCandidate(candname)" id="addcandidate"> Add </button>
-
-                    <!--p>
-                        Make sure to keep all page content within the
-                        <code>#page-content-wrapper</code>
-                        . The top navbar is optional, and just for demonstration. Just create an element with the
-                        <code>#sidebarToggle</code>
-                        ID which will toggle the menu when clicked.
-                    </p-->
+					 <button class="btn btn-primary" onclick="App.addNewCandidate(candname)" id="addcandidate"> Add </button>
                 </div>
             </div>
         </div>

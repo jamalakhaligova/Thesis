@@ -53,16 +53,20 @@
 				<h3 class="my-3"> You already voted! Go to results, after voting ends. </h3>
 			</div>	
 		</section>
-		
+		<section class="page-section" id="votingongoing">
+			<div class="text-center">
+				<h3 class="my-3"> Voting is still ongoing. </h3>
+			</div>	
+		</section>
 		<section class="page-section" id="unlogged">
 			<div class="text-center">
 				<h3 class="my-3"> You have to login to vote. You need to register if you don't have an account yet. </h3>
 				<form>
-					<button class="btn btn-success" formaction="voter_login.html">Login </button>
+					<button class="btn btn-success" id="loginvtr" formaction="voter_login.html">Login </button>
 				</form>
 				<br/>
 				<form>
-					<button class="btn btn-primary" formaction="voter_registration.html" >Register </button>
+					<button class="btn btn-primary" id="registervtr" formaction="voter_registration.html" >Register </button>
 				</form>
 			</div>	
 		</section>
@@ -75,7 +79,7 @@
 			</div>	
 		</section>
 		
-		<section class="page-section" id="closedvoting">
+		<section class="page-section" id="didntstart">
 		<br/>
 		<br/>
 			<div class="text-center">

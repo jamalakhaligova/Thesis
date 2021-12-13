@@ -2,14 +2,6 @@ var candidateId;
 var candidatesResults;
 var allCandidates;
 
-function addAccount(email, pass){
-	var $address = $(email);
-	var emailaddress = $address.val();
-	var $passw = $(pass);
-	var pass_val = $passw.val();
-
-};
-
 function adminLogin(email,pass) {
 	var $address = $(email);
 	var emailaddress = $address.val();
@@ -21,7 +13,7 @@ function adminLogin(email,pass) {
 	if(emailaddress == "admin@admin.com" && pass_val=="admin"){
 		window.location.replace("http://localhost:3000/admin.html");
 	}else{
-		console.log("Wrong Credentials!");
+		alert("Wrong Credentials!");
 	}
 	
 };
@@ -60,6 +52,7 @@ App =  {
       App.listenForEvents();
 	  App.setNames();
 	  App.checkLogin();
+	}).then(function(redirectWeb){
 	  if(window.location.href == "http://localhost:3000/votingpoll.html" || window.location.href == "http://localhost:3000/results.html"){
 		  return App.render();
 	  }
@@ -146,11 +139,10 @@ App =  {
   authenticate : function(address) { 
 	var $addrs = $(address);
 	var address_val = $addrs.val();
-	console.log(address_val);
 	App.contracts.eVote.deployed().then(function(instance) {
       return instance.voterAuth(address_val, { from: App.account }	);
     }).then(function(result) {
-		console.log("Authenticated. This user can vote now.");
+		console.log(address_val + " is authenticated.")
     });
 	  
   },
@@ -198,7 +190,7 @@ App =  {
       return instance.authorizingUsers({ from: App.account });
 	}).then(function(validationStarted){
 		$('#regcands').hide()  
-		$('#authusers').show();  		
+		$('#authusers').show(); 		
     });    
 	  
   },
@@ -234,12 +226,12 @@ App =  {
     });
 	$('#votingongoing').hide();
 	$('#electionresults').hide();
-	$('#votingnotstarted').hide();
+	$('#didntstart').hide();
 	$('#warning').hide();
 	$('#unlogged').hide();
 	$('#authfail').hide();
-	$('#closedvoting').hide();
 	$('#finished').hide();
+	$('#votingnotstarted').hide();
 	
 	
     App.contracts.eVote.deployed().then(function(instance) {
@@ -276,7 +268,7 @@ App =  {
 		if(hasVoted) {
 			$('#votepoll').hide();
 			$('#warning').show();
-			$('#closedvoting').hide();
+			$('#didntstart').hide();
 			console.log("You already voted");
 		}
 		else if(!isLoggedIn){
@@ -289,21 +281,25 @@ App =  {
 		else if(!isAllowed){
 			$('#votepoll').hide();
 			$('#authfail').show();
-			$('#votingnotstarted').show();
+			$('#didntstart').show();
 			hasAccess = false;
 			console.log("Admin didn't authorized yet"); 
 		}
 		return evoteInstance.startVote();
-	}).then(function(startedVoting){
-		if(!startedVoting){
+	}).then(function(votingStarted){
+		if(!votingStarted){
 			$('#votepoll').hide();
-			$('#closedvoting').show();
+			$('#didntstart').show();
 		}
-	}).catch(function(error) {
-		console.warn(error);
-    });
+		return evoteInstance.voteOngoing();
+	}).then(function(voteOngoing){
+		if(voteOngoing){
+			$('#votingongoing').show();
+		}else{
+			$('#votingongoing').hide();
+		}
+	});
 	
-
 	App.contracts.eVote.deployed().then(function(instance) {
 		evoteInstance = instance;
 		return evoteInstance.finishedVote();
@@ -367,17 +363,14 @@ App =  {
 	var nameval = $name.val();
 	console.log(nameval);
 	name_ascii = web3.utils.fromAscii(nameval);
-	console.log(name_ascii);
 
 	
 	App.contracts.eVote.deployed().then(function(instance) {
 		return instance.addCandidate(name_ascii, {from: App.account}).on('receipt', function(){
 		}).then(function(candidateAdded){
 			console.log(candidateAdded);
-			if(!candidateAdded){
-				console.log("Error");
-			}
-			})
+			location.reload(true);
+		})
 	})
   },
 
@@ -387,7 +380,6 @@ App =  {
 	var emailaddress = $address.val();
 	var $passw = $(pass);
 	var pass_val = $passw.val();
-	
 	App.contracts.eVote.deployed().then(function(instance) {
 		//loginVoter(address _address, string memory _password)
 		return instance.loginVoter(emailaddress,pass_val, {from: App.account}).on('receipt', function(){
@@ -429,10 +421,10 @@ App =  {
 	var $cpassw = $(conpass);
 	var confirmpass_val = $cpassw.val();
 	
-	if(pass_val == confirmpass_val){
+	if(pass_val == confirmpass_val && emailaddress!=="" && idnoval!=="" && pass_val!==""){
 		App.contracts.eVote.deployed().then(function(instance) {
-			//string memory _email,string memory _password,string memory _age
 			return instance.registerVoter(emailaddress,pass_val,idnoval, {from: App.account}).on('receipt', function(){
+		}).then(function(successfulRegistration){
 			window.location.replace("http://localhost:3000/voter_login.html");
 		}).catch(function(error){
 			$("#regerror").html("You already registered");
@@ -441,7 +433,7 @@ App =  {
 		})
 	}
 	else{
-		console.log("Passwords dont match");
+		alert("Passwords dont match");
 	}
   },
   

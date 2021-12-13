@@ -67,6 +67,17 @@ contract("eVote", function(accounts) {
 	});
   });
   
+  it("admin can't validate unregistered user", function() {
+    return eVote.deployed().then(function(instance) {
+		evoteInstance = instance;
+      return evoteInstance.voterAuth(accounts[2],{ from: accounts[0]})
+    }).then(function(receipt) {
+		return evoteInstance.voters(accounts[2]);
+    }).then(function(voter) {
+		assert.equal(false, voter[2]);
+	});
+  });
+  
   it("admin successfully changes phase to start voting", function() {
     return eVote.deployed().then(function(instance) {
 		evoteInstance = instance;

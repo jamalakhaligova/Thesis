@@ -17,10 +17,10 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">Admin Webpage</div>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="authentication.html">User Authentication</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="statisticaloverview.html">Voters overview</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="addcandidate.html">Add Candidate</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="managevoting.html">Administrate voting</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="userauth" href="authentication.html">User Authentication</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="statistics" href="statisticaloverview.html">Voters overview</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="addcndid" href="addcandidate.html">Add Candidate</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" id="phasechange" href="managevoting.html">Administrate voting</a>
                 </div>
             </div>
             <!-- Page content wrapper-->
@@ -40,10 +40,10 @@
 
 				<section id="regcands">
                     <h2 class="mt-4" id="startvote">Current phase: Registering candidates</h2>
-					<button class="btn btn-primary" id="startvotebutton" onclick="App.authorizeUsers()">Change</button>
+					<button class="btn btn-primary" id="authvotebutton" onclick="App.authorizeUsers()">Change</button>
 				</section>
                 <section id="authusers">
-                    <h2 class="mt-4" id="startvote">Current phase: Authorizing users</h2>
+                    <h2 class="mt-4" id="startvote">Current phase: Authenticating users</h2>
 					<button class="btn btn-primary" id="startvotebutton" onclick="App.startVoting()">Change</button>
 				</section>
 				<section id="stop">
