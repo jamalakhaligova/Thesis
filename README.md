@@ -1,6 +1,6 @@
 # Thesis
  
-DECENTRALIZED VOTING APPLICATION BASED ON ETHEREUM BLOCKCHAIN
+Decentralized voting application based on Ethereum blockchain
  
  
  
