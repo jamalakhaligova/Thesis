@@ -1,6 +1,6 @@
 # Thesis
  
- Secure e-voting dapp
+DECENTRALIZED VOTING APPLICATION BASED ON ETHEREUM BLOCKCHAIN
  
  
  
