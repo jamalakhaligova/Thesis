@@ -10,7 +10,7 @@ const reason = {
    * @param  {InterfaceAdapter}      interfaceAdapter a new helpful friend
    * @return {String|Undefined}      decoded reason string
    */
-  _extract: function(res, web3, _interfaceAdapter) {
+  _extract: function (res, web3, _interfaceAdapter) {
     //I'm not sure why interfaceAdapter is here if it's not used,
     //so I just put an underscore in front of its name for now...
     if (!res || (!res.error && !res.result)) return;
@@ -23,15 +23,27 @@ const reason = {
       res && typeof res === "object" && typeof res.result === "string";
 
     if (isObject) {
+      // NOTE that Ganache >=2 returns the reason string when
+      // vmErrorsOnRPCResponse === true, which this code could
+      // be updated to respect (instead of computing here)
       const data = res.error.data;
-      const hash = Object.keys(data)[0];
+      let resData;
+      if (typeof data === "string") {
+        resData = data; // geth, Ganache >7.0.0
+      } else if ("result" in data) {
+        // there is a single result (Ganache 7.0.0)
+        resData = data.result;
+      } else {
+        // handle `evm_mine`, `miner_start`, batch payloads, and ganache 2.0
+        // NOTE this only works for a single failed transaction at a time.
+        const hash = Object.keys(data)[0];
+        const errorDetails = data[hash];
+        resData = errorDetails.return /* ganache 2.0 */;
+      }
 
-      if (data[hash].return && data[hash].return.includes(errorStringHash)) {
+      if (resData && resData.includes(errorStringHash)) {
         try {
-          return web3.eth.abi.decodeParameter(
-            "string",
-            data[hash].return.slice(10)
-          );
+          return web3.eth.abi.decodeParameter("string", resData.slice(10));
         } catch (_) {
           return undefined;
         }
@@ -51,7 +63,7 @@ const reason = {
    * @param  {Object} interfaceAdapter
    * @return {String|Undefined}
    */
-  get: function(params, web3, interfaceAdapter) {
+  get: function (params, web3, interfaceAdapter) {
     const packet = {
       jsonrpc: "2.0",
       method: "eth_call",

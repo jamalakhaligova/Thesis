@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@truffle/contract": "^4.3.36",
+    "elliptic": "^6.5.4",
     "jqplot": "^1.0.9",
+    "node-fetch": "^2.6.7",
     "solc": "^0.8.9",
     "truffle-privatekey-provider": "^1.5.0",
     "web3": "^1.6.1"

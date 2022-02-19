@@ -4,7 +4,6 @@ const camelCase = require('camelcase')
 const chalk = require('chalk')
 const stripAnsi = require('strip-ansi')
 const merge = require('lodash.merge')
-const ansiMark = require('ansi-mark')
 const stripIndent = require('strip-indent')
 const detectIndent = require('detect-indent')
 
@@ -321,9 +320,7 @@ const cropPadAndNumber = (text, opts) => {
 }
 
 const decorate = (ansiStr, opts) => {
-	if (opts.highlight) {
-		ansiStr = ansiMark(ansiStr, opts.highlight)
-	}
+	// AnsiMark has been removed for causing problems.
 	ansiStr = cropPadAndNumber(ansiStr, opts)
 	return ansiStr
 }
@@ -345,7 +342,6 @@ const procOpts = (opts = {}) => {
 		lineNumberStart: 1,
 		start: 1,
 		end: Infinity,
-		highlight: false,
 		stripIndent: true,
 		codePad: 1,
 		colors: darkPalette,
