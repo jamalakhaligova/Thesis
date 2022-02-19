@@ -1,17 +1,17 @@
 
 _Decentralized voting application based on Ethereum blockchain_
 
-# Deploy application
+# Deploy
 
 1. In cmd, run the command ```truffle migrate --reset``` or  ```truffle migrate```
 
-# Run application
+# Run
 
 1. Make sure Ganache is open, connect to port 7545
 2. Connect to Metamask localhost
 3. In cmd, run the command ```npm run dev ``` 
 
-# Test application
+# Test
 
 1. In cmd, run the command ```truffle test```
  
