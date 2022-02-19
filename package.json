@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/jamalakhaligova/Thesis#readme",
   "devDependencies": {
-    "lite-server": "^2.6.1"
+    "lite-server": "^2.6.1",
+    "webpack-cli": "^4.9.2"
   }
 }
