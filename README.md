@@ -1,5 +1,5 @@
 
-Decentralized voting application based on Ethereum blockchain
+_Decentralized voting application based on Ethereum blockchain_
 
 # Deploy application
 
