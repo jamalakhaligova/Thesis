@@ -13,7 +13,7 @@
   "dependencies": {
     "@truffle/contract": "^4.3.36",
     "elliptic": "^6.5.4",
-    "engine.io": "^3.5.0",
+    "engine.io": "^4.1.2",
     "jqplot": "^1.0.9",
     "node-fetch": "^2.6.7",
     "solc": "^0.8.9",
